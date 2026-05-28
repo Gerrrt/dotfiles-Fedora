@@ -9,7 +9,11 @@
 
 # ── Clipboard shim: give Fedora the pbcopy/pbpaste muscle memory from the Mac ─
 # Wayland is the Workstation default; fall back to X11 tools over SSH/X11 sessions.
-if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-copy >/dev/null; then
+if [[ -n "${WSL_DISTRO_NAME:-}" ]] || grep -qiE 'microsoft|wsl' /proc/version 2>/dev/null; then
+  alias pbcopy='clip.exe'
+  pbpaste() { powershell.exe -NoProfile -Command Get-Clipboard 2>/dev/null | tr -d '\r'; }
+  alias open='explorer.exe'
+elif [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-copy >/dev/null; then
   alias pbcopy='wl-copy'
   alias pbpaste='wl-paste'
 elif command -v xclip >/dev/null; then
