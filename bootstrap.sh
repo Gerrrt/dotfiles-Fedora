@@ -129,6 +129,14 @@ wire_links() {
   [[ -d "$DOTFILES/core/nvim" ]]           && link "$DOTFILES/core/nvim"           "$CONFIG/nvim"
   [[ -f "$DOTFILES/core/git/gitconfig" ]]  && link "$DOTFILES/core/git/gitconfig"  "$HOME/.gitconfig"
 
+  # cross-OS helper scripts from Core onto PATH (~/.local/bin)
+  if [[ -d "$DOTFILES/core/bin" ]]; then
+    mkdir -p "$HOME/.local/bin"
+    for s in clip clip-paste; do
+      [[ -f "$DOTFILES/core/bin/$s" ]] && link "$DOTFILES/core/bin/$s" "$HOME/.local/bin/$s"
+    done
+  fi
+
   say "symlinking Fedora OS-native layer"
   link "$DOTFILES/os/fedora.zsh" "$CONFIG/zsh/os.zsh"
 
@@ -141,6 +149,17 @@ for m in tools aliases functions os local; do
   [[ -r "$ZDOTDIR_CFG/$m.zsh" ]] && source "$ZDOTDIR_CFG/$m.zsh"
 done
 ZRC
+  fi
+
+  # make zsh the default LOGIN shell — a fresh WSL/login session starts the
+  # login shell, not `exec zsh`. Idempotent: only acts if it isn't already zsh.
+  if command -v zsh >/dev/null; then
+    local zsh_path; zsh_path="$(command -v zsh)"
+    if ! getent passwd "$USER" | grep -q ":$zsh_path$"; then
+      say "setting zsh as default login shell"
+      grep -qxF "$zsh_path" /etc/shells || echo "$zsh_path" | sudo tee -a /etc/shells >/dev/null
+      sudo chsh -s "$zsh_path" "$USER" && ok "default shell -> zsh (applies to NEW sessions)"
+    fi
   fi
   ok "symlinks wired"
 }

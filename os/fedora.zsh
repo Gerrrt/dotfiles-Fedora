@@ -1,24 +1,36 @@
 # dotfiles-Fedora/os/fedora.zsh
 # ──────────────────────────────────────────────────────────────────────────────
 # The Fedora OS-native shell layer. Symlinked to ~/.config/zsh/os.zsh and loaded
-# AFTER Core (tools/aliases/functions). Everything here is Fedora-specific:
-# clipboard, package manager, SELinux, flatpak. Nothing portable belongs here —
-# portable things go up into dotfiles-core.
+# AFTER Core (tools/aliases/functions). Fedora-specific only.
+# Works on Fedora Workstation (Wayland/X11) AND WSL.
+#
+# NOTE: clipboard logic no longer lives here — it moved to Core's cross-OS
+# `clip`/`clip-paste` scripts, which zsh, tmux, and nvim all share. This layer
+# just keeps the pbcopy/pbpaste muscle-memory names pointed at them.
 # ──────────────────────────────────────────────────────────────────────────────
 [[ $- == *i* ]] || return 0
 
-# ── Clipboard shim: give Fedora the pbcopy/pbpaste muscle memory from the Mac ─
-# Wayland is the Workstation default; fall back to X11 tools over SSH/X11 sessions.
+# ── PATH: user-local bins first (Core's `clip` scripts + cargo tools land here)
+[[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
+[[ -d "$HOME/.cargo/bin"  ]] && export PATH="$HOME/.cargo/bin:$PATH"
+
+# ── Detect WSL once (for the niceties below) ──────────────────────────────────
+_IS_WSL=0
 if [[ -n "${WSL_DISTRO_NAME:-}" ]] || grep -qiE 'microsoft|wsl' /proc/version 2>/dev/null; then
-  alias pbcopy='clip.exe'
-  pbpaste() { powershell.exe -NoProfile -Command Get-Clipboard 2>/dev/null | tr -d '\r'; }
-  alias open='explorer.exe'
-elif [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-copy >/dev/null; then
-  alias pbcopy='wl-copy'
-  alias pbpaste='wl-paste'
-elif command -v xclip >/dev/null; then
-  alias pbcopy='xclip -selection clipboard'
-  alias pbpaste='xclip -selection clipboard -o'
+  _IS_WSL=1
+fi
+
+# ── Clipboard: delegate to Core's cross-OS scripts (single implementation) ────
+command -v clip       >/dev/null && alias pbcopy='clip'
+command -v clip-paste >/dev/null && alias pbpaste='clip-paste'
+
+# ── WSL-only niceties (interop reach-arounds into Windows) ───────────────────
+if (( _IS_WSL )); then
+  alias open='explorer.exe'                 # `open .` opens the dir in Explorer
+  command -v wslview >/dev/null && alias xdg-open='wslview'
+  # jump to your Windows user home: set WINHOME in local.zsh, e.g.
+  #   export WINHOME="/mnt/c/Users/<you>"
+  [[ -n "${WINHOME:-}" ]] && alias cdwin='cd "$WINHOME"'
 fi
 
 # ── Fedora ships fd as `fd` (not fdfind) — tools.zsh already resolved this. ───
@@ -30,23 +42,20 @@ alias dnfu='sudo dnf upgrade --refresh'
 alias dnfr='sudo dnf remove'
 alias dnfh='dnf history'              # transaction history — undo-able installs
 alias dnfwhat='dnf provides'         # which package owns a file/command
-# undo the last dnf transaction (handy after a bad upgrade):
 dnf-undo() { sudo dnf history undo last; }
 
-# ── Flatpak helpers ───────────────────────────────────────────────────────────
+# ── Flatpak helpers (mostly inert on WSL without WSLg; harmless) ─────────────
 alias fpi='flatpak install flathub'
 alias fpu='flatpak update'
 alias fps='flatpak search'
 alias fpl='flatpak list --app'
 
-# ── SELinux helpers (Fedora is enforcing by default; relevant for security work)
-alias se-status='sestatus'
+# ── SELinux helpers ───────────────────────────────────────────────────────────
+# NOTE: WSL kernels usually run with SELinux DISABLED, so these are inert there.
+# They matter once you also run this repo on bare-metal / VM Fedora (enforcing).
+alias se-status='sestatus 2>/dev/null || echo "SELinux not active (expected on WSL)"'
 alias se-denials='sudo ausearch -m AVC,USER_AVC -ts recent 2>/dev/null | tail -40'
-# restore default SELinux context on a path after moving/copying a file:
 se-restore() { sudo restorecon -Rv "${1:?usage: se-restore <path>}"; }
-# explain the most recent denials in plain language (needs setroubleshoot):
 alias se-why='sudo journalctl -t setroubleshoot --since "10 min ago" 2>/dev/null'
 
-# ── machine-specific PATH (cargo-installed tools land here) ──────────────────
-[[ -d "$HOME/.cargo/bin" ]] && export PATH="$HOME/.cargo/bin:$PATH"
-[[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
+unset _IS_WSL
