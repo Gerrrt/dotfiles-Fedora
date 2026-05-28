@@ -21,6 +21,7 @@ tealdeer       # tldr (fast Rust client; binary: tldr)
 # ── editor + git workflow ─────────────────────────────────────
 neovim
 git
+git-subtree    # `git subtree` ships as a SEPARATE package on Fedora (architecture needs it)
 # lazygit is NOT in Fedora base repos — bootstrap.sh installs it via COPR (atim/lazygit)
 
 # ── clipboard (Fedora Workstation is Wayland-first) ───────────
