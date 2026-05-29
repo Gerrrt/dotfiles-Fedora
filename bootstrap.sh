@@ -96,6 +96,13 @@ provision() {
     say "yazi (cargo)"
     cargo install --locked yazi-fs yazi-cli >/dev/null 2>&1 || true
   fi
+  # mise — polyglot runtime manager (node/python/go/...). Portable; activated in
+  # core/zsh/tools.zsh. Install the binary here; runtimes are fetched separately
+  # with `mise install` (kept out of bootstrap so it stays fast/predictable).
+  if ! command -v mise >/dev/null && [[ ! -x "$HOME/.local/bin/mise" ]]; then
+    say "mise (official installer)"
+    curl -fsSL https://mise.run | sh >/dev/null 2>&1 || true
+  fi
   # lazygit isn't in Fedora's base repos — pull it from the well-known COPR.
   if ! command -v lazygit >/dev/null; then
     say "lazygit (COPR atim/lazygit)"
@@ -127,6 +134,7 @@ wire_links() {
   done
   [[ -f "$DOTFILES/core/tmux/tmux.conf" ]] && link "$DOTFILES/core/tmux/tmux.conf" "$CONFIG/tmux/tmux.conf"
   [[ -d "$DOTFILES/core/nvim" ]]           && link "$DOTFILES/core/nvim"           "$CONFIG/nvim"
+  [[ -f "$DOTFILES/core/mise/config.toml" ]] && link "$DOTFILES/core/mise/config.toml" "$CONFIG/mise/config.toml"
   [[ -f "$DOTFILES/core/git/gitconfig" ]]  && link "$DOTFILES/core/git/gitconfig"  "$HOME/.gitconfig"
 
   # OS-specific git layer (credential helper) -> included by Core's gitconfig
