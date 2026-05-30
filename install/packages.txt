@@ -21,7 +21,8 @@ tealdeer       # tldr (fast Rust client; binary: tldr)
 # ── editor + git workflow ─────────────────────────────────────
 neovim
 git
-git-subtree    # `git subtree` ships as a SEPARATE package on Fedora (architecture needs it)
+git-subtree      # `git subtree` ships as a SEPARATE package on Fedora (architecture needs it)
+openssh-clients  # ssh / ssh-keygen / ssh-agent — Workstation has it; minimal/Server may not
 # lazygit is NOT in Fedora base repos — bootstrap.sh installs it via COPR (atim/lazygit)
 
 # ── clipboard (Fedora Workstation is Wayland-first) ───────────
@@ -30,12 +31,16 @@ xclip          # X11 fallback (sessions / SSH X-forward)
 
 # ── build + language toolchain (needed for cargo-installed tools) ─
 gcc
+gcc-c++        # C++ compiler — Fedora's gcc is C-only; some tree-sitter parsers ship C++ scanners
 make
 cargo          # rust toolchain -> cargo install fallback for yazi/dust/procs
 
 # ── Neovim provider deps (fix :checkhealth; use dnf NOT pip — F44 python is PEP668-managed)
 python3-neovim # pynvim — the Python 3 provider module
 python3-pip    # pip for the system python
+tree-sitter-cli # nvim-treesitter (main branch) compiles parsers locally — needs the CLI ≥0.26.1.
+                # If :checkhealth nvim-treesitter flags it as too old, drop it from this list and
+                # install current via mise (`mise use -g tree-sitter`) or `cargo install tree-sitter-cli`.
 # rust-analyzer  # uncomment if you use the Rust LSP (rustaceanvim wants it)
 # golang         # uncomment if you want the Go LSP (gopls) + Go tooling
 

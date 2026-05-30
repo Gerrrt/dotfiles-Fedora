@@ -26,6 +26,7 @@ Flags: `--links-only` (re-link without touching dnf), `--no-flatpak`.
 bootstrap.sh          dnf provision + Core/OS symlink wiring (idempotent)
 install/packages.txt  dnf package list (modern CLI stack)
 os/fedora.zsh         OS-native shell layer -> symlinked to ~/.config/zsh/os.zsh
+ssh/config            hardened SSH client config -> ~/.ssh/config (keys never tracked)
 core/                 vendored from dotfiles-core (git subtree; do not hand-edit)
 ```
 
