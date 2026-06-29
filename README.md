@@ -1,18 +1,11 @@
-<div align="center">
-
 # 🎩 dotfiles-Fedora
 
-### Fedora — the template layer.
-
-The Fedora layer (dnf + RPM Fusion) — the template the other
-Linux repos are stamped from.
+**Fedora — the template layer.** The Fedora layer (dnf + RPM Fusion) — the
+template the other Linux repos are stamped from.
 
 `dnf` · `zsh` · `nvim` · `tmux`
 
-[![showcase](https://img.shields.io/badge/showcase-live-7aa2f7?style=flat-square)](https://gerrrt.github.io/dotfiles-web/)
-[![Linux](https://img.shields.io/badge/Linux-template-7aa2f7?style=flat-square)]()
-
-</div>
+[![showcase](https://img.shields.io/badge/showcase-live-7aa2f7?style=flat-square)](https://gerrrt.github.io/dotfiles-web/) ![Linux](https://img.shields.io/badge/Linux-template-7aa2f7?style=flat-square)
 
 ---
 
